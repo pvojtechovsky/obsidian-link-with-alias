@@ -1,5 +1,7 @@
 # Link with alias
 
+![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22obsidian-link-with-alias%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&style=plastic) ![](https://img.shields.io/github/v/release/pvojtechovsky/obsidian-link-with-alias?label=Latest%20Release&style=plastic)
+
 This plugin implements one command "Create link with alias", which provides fast creation of link whose display text is added into aliases atribute in front matter of the target note.
 
 ![Use cases](use_cases.gif "Use cases")

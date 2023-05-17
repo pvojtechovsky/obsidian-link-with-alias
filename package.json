@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-link-with-alias",
 	"version": "1.0.0",
-	"description": "Obsidian plugin for handy creation of links and alias in front matter of target document",
+	"description": "Creates links and aliases in front matter of target document",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

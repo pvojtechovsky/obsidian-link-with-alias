@@ -3,9 +3,9 @@
 	"name": "Link with alias",
 	"version": "1.0.0",
 	"minAppVersion": "1.1.0",
-	"description": "Obsidian plugin for handy creation of links and alias in front matter of target document",
+	"description": "Creates links and aliases in front matter of target document",
 	"author": "Pavel Vojtěchovský",
 	"authorUrl": "https://github.com/pvojtechovsky",
 	"fundingUrl": "https://www.buymeacoffee.com/pavel.knowledge",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }
