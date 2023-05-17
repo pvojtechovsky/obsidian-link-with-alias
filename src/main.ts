@@ -1,6 +1,5 @@
-import { App, Editor, EditorPosition, MarkdownView, Plugin, PluginManifest, ReferenceCache, TFile } from "obsidian";
+import { App, Editor, EditorPosition, Plugin, PluginManifest, ReferenceCache, TFile } from "obsidian";
 
-import { CachedMetadataProvider } from "./CacheUtils";
 import { EditorCursorListener } from "./EditorCursorListener";
 import { addMissingAliasesIntoFile } from "./InjectAlias";
 import { Unregister } from "./ListenerRegistry";
@@ -38,13 +37,11 @@ class LinkInfo {
  * Main plugin class
  */
 export default class LinkWithAliasPlugin extends Plugin {
-	cachedMetadataProvider: CachedMetadataProvider;
 	editorCursorListener: EditorCursorListener;
 	linkInfo?: LinkInfo;
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
-		this.cachedMetadataProvider = new CachedMetadataProvider(this);
 		this.editorCursorListener = new EditorCursorListener(this);
 	}
 
@@ -52,8 +49,10 @@ export default class LinkWithAliasPlugin extends Plugin {
 		this.addCommand({
 			id: "create-link-with-alias",
 			name: "Create link with alias",
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				this.createLinkFromSelection(view.file, editor, editor.getCursor());
+			editorCallback: (editor: Editor, ctx) => {
+				if (ctx.file) {
+					this.createLinkFromSelection(ctx.file, editor, editor.getCursor());
+				}
 			},
 		});
 	}
@@ -96,19 +95,12 @@ export default class LinkWithAliasPlugin extends Plugin {
 		//create new link handling request
 		const lastLink = new LinkInfo(linkStart, file, editor);
 
-		lastLink
-			.register(
-				//listen on metadata change
-				this.cachedMetadataProvider.registerOnMetadataChange(file, () => {
-					return this.handleChangeOnLastLink(editor, lastLink);
-				}),
-			)
-			.register(
-				//listen on cursor move or deactivation of editor
-				this.editorCursorListener.fireOnCursorChange(editor, (cursorPosition) => {
-					return this.handleChangeOnLastLink(editor, lastLink);
-				}),
-			);
+		lastLink.register(
+			//listen on cursor move or deactivation of editor
+			this.editorCursorListener.fireOnCursorChange(editor, (cursorPosition) => {
+				return this.handleChangeOnLastLink(editor, lastLink);
+			}),
+		);
 
 		this.linkInfo = lastLink;
 	}

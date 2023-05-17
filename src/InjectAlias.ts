@@ -1,4 +1,4 @@
-import { FileManager, Notice, TFile } from "obsidian";
+import { FileManager, TFile } from "obsidian";
 import { toArray } from "./Utils";
 
 const aliasPropertyNames = ["aliases", "alias"];
@@ -21,15 +21,14 @@ export async function addMissingAliasesIntoFile(fileManager: FileManager, file: 
 					toBeAdded.push(requiredAlias);
 				}
 			});
-			if (toBeAdded.length == 0) {
-				new Notice(`Alias ${requiredAliases.join(", ")} already exists`, 5 * 1000);
+			if (toBeAdded.length === 0) {
+				//alias already exists. Do nothing
 				return;
 			}
 			const newAliases = [...existingAliases, ...toBeAdded];
 			//longest firs. It is needed for correct detection of back references
 			newAliases.sort((a, b) => b.length - a.length);
 			frontmatter[aliasPropName] = newAliases;
-			new Notice(`Alias ${requiredAliases.join(", ")} ${requiredAliases.length == 1 ? "was" : "were"} added`, 5 * 1000);
 		}
 	});
 }

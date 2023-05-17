@@ -5,11 +5,16 @@ export type Unregister = () => void;
  */
 export type Callback<C> = (args: C) => boolean;
 
+interface RegistryItem<C> {
+	callback: Callback<C>;
+	destroyed?: true;
+}
+
 /**
  * Registry for repeatadly called callbacks. The callback can deregister by a return value false
  */
 export class ListenerRegistry<C> {
-	private callbacks: Callback<C>[] = [];
+	private callbacks: RegistryItem<C>[] = [];
 
 	constructor(private name: string) {}
 
@@ -23,9 +28,12 @@ export class ListenerRegistry<C> {
 		}
 		const callbacks = [...this.callbacks];
 		this.callbacks.length = 0;
-		callbacks.forEach((h) => {
-			if (h(args)) {
-				this.callbacks.push(h);
+		callbacks.forEach((item) => {
+			if (!item.destroyed && item.callback(args)) {
+				if (!item.destroyed) {
+					//add it if callback did not unregistered this item during its call
+					this.callbacks.push(item);
+				}
 			}
 		});
 	}
@@ -36,9 +44,11 @@ export class ListenerRegistry<C> {
 	 * @returns
 	 */
 	register(callback: Callback<C>): Unregister {
-		this.callbacks.push(callback);
+		const item: RegistryItem<C> = { callback };
+		this.callbacks.push(item);
 		return () => {
-			this.callbacks.remove(callback);
+			item.destroyed = true;
+			this.callbacks.remove(item);
 		};
 	}
 }
