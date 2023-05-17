@@ -144,6 +144,10 @@ export default class LinkWithAliasPlugin extends Plugin {
 		}
 		//the link contains display text. Add it as alias
 		const linkTargetPath = cacheLink.link;
+		if (!linkTargetPath) {
+			//there is no link target
+			return;
+		}
 		const target = await getOrCreateFileOfLink(this.app, linkTargetPath, sourcePath);
 		await addMissingAliasesIntoFile(this.app.fileManager, target, [cacheLink.displayText]);
 	}
