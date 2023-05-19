@@ -1,13 +1,13 @@
 {
 	"name": "obsidian-link-with-alias",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Creates links and aliases in front matter of target document",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"test": "jest",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+		"version": "node version-bump.mjs && git add package.json manifest.json versions.json"
 	},
 	"keywords": [],
 	"author": "",
