@@ -1,4 +1,5 @@
-import { Editor, EditorPosition, ReferenceCache } from "obsidian";
+import { Editor, EditorPosition, Pos, ReferenceCache } from "obsidian";
+import { locToEditorPositon, moveLoc } from "./PositionUtils";
 
 const linkPrefix = "[[";
 const linkSuffix = "]]";
@@ -89,4 +90,37 @@ export function lastIndexOf(str: string, from: number, predicate: (lookup: Looku
 		}
 	}
 	return -1;
+}
+
+/**
+ *
+ * @param link
+ * @returns Pos of link text where the Pos.start points to the link pipe character
+ */
+export function getLinkTextPosWithPipe(link: ReferenceCache): Pos {
+	if (link.displayText) {
+		return {
+			start: moveLoc(link.position.end, -link.displayText.length - 3),
+			end: moveLoc(link.position.end, -2),
+		};
+	}
+	return {
+		start: moveLoc(link.position.end, -2),
+		end: moveLoc(link.position.end, -2),
+	};
+}
+
+/**
+ * Sets the link text of `link` to be a `linkText`
+ * @param link
+ * @param editor
+ * @param linkText
+ */
+export function setLinkText(link: ReferenceCache, editor: Editor, linkText: string): void {
+	if (link.displayText !== linkText) {
+		//it was changed rollback the change now
+		const linkTextPos = getLinkTextPosWithPipe(link);
+		editor.replaceRange(`|${linkText}`, locToEditorPositon(linkTextPos.start), locToEditorPositon(linkTextPos.end));
+		link.displayText = linkText;
+	}
 }

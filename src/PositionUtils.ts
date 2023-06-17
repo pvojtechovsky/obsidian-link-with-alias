@@ -1,5 +1,13 @@
 import { Editor, EditorPosition, Loc, Pos } from "obsidian";
 
+/** Converts Loc to EditorPosition */
+export function locToEditorPositon(loc: Loc): EditorPosition {
+	return {
+		line: loc.line,
+		ch: loc.col,
+	};
+}
+
 /**
  *
  * @param loc
@@ -12,6 +20,23 @@ export function moveEditorPosition(loc: EditorPosition, offsetDif: number): Edit
 		ch: loc.ch + offsetDif,
 	};
 	if (loc2.ch < 0) {
+		throw new Error("Negative col");
+	}
+	return loc2;
+}
+
+/**
+ * @param loc
+ * @param offsetDif
+ * @returns creates new Loc by moving `loc` by `offsetDif` characters
+ */
+export function moveLoc(loc: Loc, offsetDif: number): Loc {
+	const loc2: Loc = {
+		line: loc.line,
+		col: loc.col + offsetDif,
+		offset: loc.offset + offsetDif,
+	};
+	if (loc2.col < 0) {
 		throw new Error("Negative col");
 	}
 	return loc2;

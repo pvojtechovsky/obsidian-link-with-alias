@@ -23,4 +23,8 @@ This plugin implements one command "Create link with alias", which provides fast
 
 -   The alias is added into front matter of the target note only when it isn't there yet
 -   The aliases are sorted from longest to shortest, so the Obsidian backlinks are detected correctly
--   The link autocompletion popup is the standard one provided by Obsidian so if it sometime behaves different then you would expect, then report it to Obsidian team. I have no influence to it
+-   The link autocompletion popup is the standard one provided by Obsidian. It sometime replaces the link text automaticaly, but it isn't wanted in this use case. The action "Create link with alias" will keep the link text exactly the same like it was before.
+
+If you find this plugin useful and would like to support its development, you can support me on [Ko-fi](https://ko-fi.com/pavel_knowledge).
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/pavel_knowledge)

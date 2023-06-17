@@ -3,7 +3,7 @@ import { App, Editor, EditorPosition, Plugin, PluginManifest, ReferenceCache, TF
 import { EditorCursorListener } from "./EditorCursorListener";
 import { addMissingAliasesIntoFile } from "./InjectAlias";
 import { Unregister } from "./ListenerRegistry";
-import { getReferenceCacheFromEditor } from "./MarkdownUtils";
+import { getReferenceCacheFromEditor, setLinkText } from "./MarkdownUtils";
 import { equalsPosition, isEditorPositionInPos, moveCursor, moveEditorPosition } from "./PositionUtils";
 import { getOrCreateFileOfLink } from "./VaultUtils";
 
@@ -13,6 +13,7 @@ import { getOrCreateFileOfLink } from "./VaultUtils";
 class LinkInfo {
 	/**  */
 	private readonly unregister: Unregister[] = [];
+
 	constructor(
 		/** Editor position of the link start bracket `[` */
 		public readonly linkStart: EditorPosition,
@@ -20,6 +21,8 @@ class LinkInfo {
 		public readonly file: TFile,
 		/** The Editor which contains the link*/
 		public readonly editor: Editor,
+		/** The string of link text from the last process check */
+		public linkText?: string,
 	) {}
 
 	register(unregister: Unregister): this {
@@ -77,6 +80,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 		}
 		const selected_word = editor.getSelection();
 		let linkStart;
+		let linkText;
 		if (selected_word == "") {
 			//nothing is selected, just create a new empty link
 			editor.replaceSelection(`[[]]`);
@@ -85,6 +89,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 			//text is selected use it as link target and also link display text
 			editor.replaceSelection(`[[${selected_word}|${selected_word}]]`);
 			linkStart = moveEditorPosition(moveCursor(editor, -(selected_word.length + 3)), -(selected_word.length + 2));
+			linkText = selected_word;
 		}
 
 		if (this.linkInfo) {
@@ -93,7 +98,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 			delete this.linkInfo;
 		}
 		//create new link handling request
-		const lastLink = new LinkInfo(linkStart, file, editor);
+		const lastLink = new LinkInfo(linkStart, file, editor, linkText);
 
 		lastLink.register(
 			//listen on cursor move or deactivation of editor
@@ -116,10 +121,18 @@ export default class LinkWithAliasPlugin extends Plugin {
 			//the link still exist and starts on the expected position, continue handling
 			//the cache link for just created link exists now
 			if (isEditorPositionInPos(lastLink.editor.getCursor(), cacheLink.position)) {
-				//User still edits the last link, wait until he is done and moves cursor out
+				//User still edits the last link,
+				//update the link text if it was changed by user
+				lastLink.linkText = cacheLink.displayText;
+				//wait until he is done and moves cursor out
 				return true;
 			}
-			//user left the link so s/he is done and we can create an alias
+			//user left the link so s/he is done
+			if (lastLink.linkText) {
+				//Reset the link text in case the obsidian autocompletion changed it
+				setLinkText(cacheLink, editor, lastLink.linkText);
+			}
+			//now we can create an alias
 			this.addMissingAlias(cacheLink, lastLink.file.path);
 			//continue handling here, because user can come back and add different alias for that last link
 			return true;
