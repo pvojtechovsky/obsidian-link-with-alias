@@ -4,20 +4,35 @@
 
 This plugin implements one command "Create link with alias", which provides fast creation of link whose display text is added into aliases atribute in front matter of the target note.
 
-![Use cases](use_cases.gif "Use cases")
+# Use cases
 
-# Supported use cases
+## Make link on existing text
 
--   User selects some text and runs the command "Create link with alias"
-    -   it creates a new link with target and display name copied from selected text and opens the link autocompletion popup
-    -   user can optionally edit the link target or just select a value from the autocompletion popup
-    -   when user closes autocompletion popup and cursor leaves the link, then the link display text is added as alias into front matter of the target note
--   User puts cursor into existing link and runs command "Create link with alias"
-    -   the action creates the target document, if it doesn't exist, and adds link display text as alias into front matter of the target note
--   User puts cursor into text and runs command "Create link with alias"
-    -   it creates link brackets and opens autocompletion popup for entering of link target name
-    -   after user types in part of the target name or alias and selects it by enter, the link is created
-    -   if there is no display text and user moves back into link and enters one, then system detects it and after cursor leaves the brackets or user closes the window, the link display text is added as alias into front matter of the target note
+User selects some text and runs the command "Create link with alias". The command creates a new link with target and display name copied from selected text and opens the link autocompletion popup and ...
+
+A) ... user can just select a value from the autocompletion popup, press Enter and link and alias are created.
+
+![Run command, press Enter, done](use-case1.gif)
+
+B) ... user can edit the link target then select a value from the autocompletion popup, press Enter and link and alias are created. Note that link text is kept.
+
+![Run command, edit link, select in autocompletion, press Enter, done](use-case5.gif)
+
+C) ... user can enter name of new note, let cursor leave the link, then the new note is created automatically with link display text as alias.
+
+![Run command, edit link, leave the link, done](use-case6.gif)
+
+## Add alias for existing link
+
+User puts cursor into existing link and runs command "Create link with alias". The command creates the target document, if it doesn't exist, and adds link display text as alias into front matter of the target note
+
+![Run command in link, done](use-case2.gif)
+
+## Make completely new link
+
+User puts cursor into text and runs command "Create link with alias". It creates link brackets and opens autocompletion popup for entering of link target name. After user types in part of the target name or alias and selects it by enter, the link is created. If there is no display text and user moves back into link and enters one, then system detects it and after cursor leaves the brackets or user closes the window, the link display text is added as alias into front matter of the target note. While this use case is supported, it is usually faster to write text without link first and then **Make link on existing text**.
+
+![Run command, select target, press Enter, move cursor back, write alias, leave the link, done](use-case3.gif)
 
 # Notes
 
@@ -25,6 +40,16 @@ This plugin implements one command "Create link with alias", which provides fast
 -   The aliases are sorted from longest to shortest, so the Obsidian backlinks are detected correctly
 -   The link autocompletion popup is the standard one provided by Obsidian. It sometime replaces the link text automaticaly, but it isn't wanted in this use case. The action "Create link with alias" will keep the link text exactly the same like it was before.
 
-If you find this plugin useful and would like to support its development, you can support me on [Ko-fi](https://ko-fi.com/pavel_knowledge).
+![Run command, press Enter, done](use-case4.gif)
+
+# About me
+
+I am a Software developer and architect with more then 35 years of programming experience. I am highly interested in creation and maintenance of human understandable, up to date, distributed and trustworthy knowledge.
+
+I love lifetime, nature, people, psychology and dancing. I am exited about the Obsidian because it helps me to experiment, prototype and prepare concepts of that knowledge base.
+
+Thank You for Your support which helps me to give more time for Obsidian plugins and that Knowledge base project I am dreaming of.
 
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/pavel_knowledge)
+
+[<img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="BuyMeACoffee" width="170">](https://www.buymeacoffee.com/pavel.knowledge)
