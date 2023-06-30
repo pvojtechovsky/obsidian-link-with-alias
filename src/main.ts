@@ -52,6 +52,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 		this.addCommand({
 			id: "create-link-with-alias",
 			name: "Create link with alias",
+			icon: "bracket-glyph",
 			editorCallback: (editor: Editor, ctx) => {
 				if (ctx.file) {
 					this.createLinkFromSelection(ctx.file, editor, editor.getCursor());
