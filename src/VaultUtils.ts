@@ -12,6 +12,6 @@ export async function getOrCreateFileOfLink(app: App, target: string, sourcePath
 		return existingFile;
 	}
 	//create new file
-	const filePath = app.fileManager.getNewFileParent(sourcePath).path + target + ".md";
-	return app.vault.create(filePath, "");
+	const folder = app.fileManager.getNewFileParent(sourcePath);
+	return app.fileManager.createNewMarkdownFile(folder, target);
 }
