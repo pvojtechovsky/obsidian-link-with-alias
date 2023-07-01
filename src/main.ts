@@ -6,6 +6,7 @@ import { Unregister } from "./ListenerRegistry";
 import { getReferenceCacheFromEditor, setLinkText } from "./MarkdownUtils";
 import { equalsPosition, isEditorPositionInPos, moveCursor, moveEditorPosition } from "./PositionUtils";
 import { getOrCreateFileOfLink } from "./VaultUtils";
+import { DEFAULT_SETTINGS, LinksSettingTab } from "./settings";
 
 /**
  * Information about to be handled link
@@ -21,6 +22,8 @@ class LinkInfo {
 		public readonly file: TFile,
 		/** The Editor which contains the link*/
 		public readonly editor: Editor,
+		/** At the end make alias */
+		public readonly makeAlias: boolean,
 		/** The string of link text from the last process check */
 		public linkText?: string,
 	) {}
@@ -42,6 +45,7 @@ class LinkInfo {
 export default class LinkWithAliasPlugin extends Plugin {
 	editorCursorListener: EditorCursorListener;
 	linkInfo?: LinkInfo;
+	settings = DEFAULT_SETTINGS;
 
 	constructor(app: App, manifest: PluginManifest) {
 		super(app, manifest);
@@ -49,16 +53,44 @@ export default class LinkWithAliasPlugin extends Plugin {
 	}
 
 	async onload() {
+		await this.loadSettings();
+
 		this.addCommand({
 			id: "create-link-with-alias",
 			name: "Create link with alias",
 			icon: "bracket-glyph",
 			editorCallback: (editor: Editor, ctx) => {
 				if (ctx.file) {
-					this.createLinkFromSelection(ctx.file, editor, editor.getCursor());
+					this.createLinkFromSelection(ctx.file, editor, editor.getCursor(), {
+						makeAlias: true,
+						pathFromText: this.settings.copyDisplayText,
+					});
 				}
 			},
 		});
+		this.addCommand({
+			id: "create-link",
+			name: "Create link",
+			icon: "bracket-glyph",
+			editorCallback: (editor: Editor, ctx) => {
+				if (ctx.file) {
+					this.createLinkFromSelection(ctx.file, editor, editor.getCursor(), {
+						makeAlias: false,
+						pathFromText: this.settings.copyDisplayText,
+					});
+				}
+			},
+		});
+
+		this.addSettingTab(new LinksSettingTab(this.app, this));
+	}
+
+	async loadSettings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
+
+	async saveSettings(): Promise<void> {
+		await this.saveData(this.settings);
 	}
 
 	/**
@@ -68,7 +100,12 @@ export default class LinkWithAliasPlugin extends Plugin {
 	 * @param editor
 	 * @param position
 	 */
-	private createLinkFromSelection(file: TFile, editor: Editor, position: EditorPosition): void {
+	private createLinkFromSelection(
+		file: TFile,
+		editor: Editor,
+		position: EditorPosition,
+		options: { makeAlias: boolean; pathFromText: boolean },
+	): void {
 		/**
 		 * returns ReferenceCache like structure which describes the link in `editor` on `pos` position or undefined if there is no link at `pos` position
 		 */
@@ -76,7 +113,9 @@ export default class LinkWithAliasPlugin extends Plugin {
 		if (cacheLink != null && cacheLink.position.start.col !== position.ch) {
 			//the cursor is inside the link, do not make nested link
 			//but instead check that display text is used as alias
-			this.addMissingAlias(cacheLink, file.path);
+			if (options.makeAlias) {
+				this.addMissingAlias(cacheLink, file.path);
+			}
 			return;
 		}
 		const selected_word = editor.getSelection();
@@ -87,10 +126,18 @@ export default class LinkWithAliasPlugin extends Plugin {
 			editor.replaceSelection(`[[]]`);
 			linkStart = moveEditorPosition(moveCursor(editor, -2), -2);
 		} else {
-			//text is selected use it as link target and also link display text
-			editor.replaceSelection(`[[${selected_word}|${selected_word}]]`);
-			linkStart = moveEditorPosition(moveCursor(editor, -(selected_word.length + 3)), -(selected_word.length + 2));
-			linkText = selected_word;
+			//text is selected
+			if (options.pathFromText) {
+				// use it as link target and also link display text
+				editor.replaceSelection(`[[${selected_word}|${selected_word}]]`);
+				linkStart = moveEditorPosition(moveCursor(editor, -(selected_word.length + 3)), -(selected_word.length + 2));
+				linkText = selected_word;
+			} else {
+				// use it as link target
+				editor.replaceSelection(`[[|${selected_word}]]`);
+				linkStart = moveEditorPosition(moveCursor(editor, -(selected_word.length + 3)), -2);
+				linkText = selected_word;
+			}
 		}
 
 		if (this.linkInfo) {
@@ -99,7 +146,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 			delete this.linkInfo;
 		}
 		//create new link handling request
-		const lastLink = new LinkInfo(linkStart, file, editor, linkText);
+		const lastLink = new LinkInfo(linkStart, file, editor, options.makeAlias, linkText);
 
 		lastLink.register(
 			//listen on cursor move or deactivation of editor
@@ -133,8 +180,10 @@ export default class LinkWithAliasPlugin extends Plugin {
 				//Reset the link text in case the obsidian autocompletion changed it
 				setLinkText(cacheLink, editor, lastLink.linkText);
 			}
-			//now we can create an alias
-			this.addMissingAlias(cacheLink, lastLink.file.path);
+			if (lastLink.makeAlias) {
+				//now we can create an alias
+				this.addMissingAlias(cacheLink, lastLink.file.path);
+			}
 			//continue handling here, because user can come back and add different alias for that last link
 			return true;
 		}
