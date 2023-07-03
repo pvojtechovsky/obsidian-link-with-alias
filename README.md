@@ -2,7 +2,12 @@
 
 ![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22link-with-alias%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&style=plastic) ![](https://img.shields.io/github/v/release/pvojtechovsky/obsidian-link-with-alias?label=Latest%20Release&style=plastic)
 
-This plugin implements one command "Create link with alias", which provides fast creation of link whose display text is added into aliases atribute in front matter of the target note.
+This plugin implements two commands
+
+-   Create link with alias - provides fast creation of link whose display text is added into aliases atribute in front matter of the target note.
+-   Create link - provides fast creation of link
+
+Both commands assures that link display text is kept => isn't replaced by Obsidian link autocompletion.
 
 # Use cases
 
@@ -33,6 +38,14 @@ User puts cursor into existing link and runs command "Create link with alias". T
 User puts cursor into text and runs command "Create link with alias". It creates link brackets and opens autocompletion popup for entering of link target name. After user types in part of the target name or alias and selects it by enter, the link is created. If there is no display text and user moves back into link and enters one, then system detects it and after cursor leaves the brackets or user closes the window, the link display text is added as alias into front matter of the target note. While this use case is supported, it is usually faster to write text without link first and then **Make link on existing text**.
 
 ![Run command, select target, press Enter, move cursor back, write alias, leave the link, done](use-case3.gif)
+
+# Settings
+
+You can configured whether
+
+A) the text which is selected when command is executed is copied as link target name, so the autocompletion can immediatelly offer the similar term
+
+B) or the link target is kept empty so you can immediatelly type in the target note name
 
 # Notes
 
