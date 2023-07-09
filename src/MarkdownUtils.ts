@@ -58,7 +58,8 @@ export function getReferenceCacheFromEditor(editor: Editor, pos?: EditorPosition
 			},
 		},
 		original,
-		displayText: parts[1] || parts[0],
+		//keep displayText undefined in case the link contains no display text, just link name
+		displayText: parts[1],
 	};
 }
 
@@ -98,7 +99,8 @@ export function lastIndexOf(str: string, from: number, predicate: (lookup: Looku
  * @returns Pos of link text where the Pos.start points to the link pipe character
  */
 export function getLinkTextPosWithPipe(link: ReferenceCache): Pos {
-	if (link.displayText) {
+	//empty string in display text should be handled here too
+	if (link.displayText != null) {
 		return {
 			start: moveLoc(link.position.end, -link.displayText.length - 3),
 			end: moveLoc(link.position.end, -2),
