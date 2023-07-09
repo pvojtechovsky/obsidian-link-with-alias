@@ -5,6 +5,7 @@ import { addMissingAliasesIntoFile } from "./InjectAlias";
 import { Unregister } from "./ListenerRegistry";
 import { getReferenceCacheFromEditor, setLinkText } from "./MarkdownUtils";
 import { equalsPosition, isEditorPositionInPos, moveCursor, moveEditorPosition } from "./PositionUtils";
+import { capitalize } from "./Utils";
 import { getOrCreateFileOfLink } from "./VaultUtils";
 import { DEFAULT_SETTINGS, LinksSettingTab } from "./settings";
 
@@ -129,7 +130,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 			//text is selected
 			if (options.pathFromText) {
 				// use it as link target and also link display text
-				editor.replaceSelection(`[[${selected_word}|${selected_word}]]`);
+				editor.replaceSelection(`[[${capitalize(selected_word)}|${selected_word}]]`);
 				linkStart = moveEditorPosition(moveCursor(editor, -(selected_word.length + 3)), -(selected_word.length + 2));
 				linkText = selected_word;
 			} else {
