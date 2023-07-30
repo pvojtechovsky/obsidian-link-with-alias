@@ -1,7 +1,7 @@
 {
 	"id": "link-with-alias",
 	"name": "Link with alias",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"minAppVersion": "1.1.0",
 	"description": "Creates links and aliases in front matter of target document",
 	"author": "Pavel Vojtěchovský",
