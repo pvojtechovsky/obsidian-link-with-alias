@@ -1,4 +1,4 @@
-import { App, Editor, EditorPosition, Plugin, PluginManifest, ReferenceCache, TFile } from "obsidian";
+import { App, Editor, EditorPosition, MarkdownFileInfo, MarkdownView, Plugin, PluginManifest, ReferenceCache, TFile } from "obsidian";
 
 import { EditorCursorListener } from "./EditorCursorListener";
 import { addMissingAliasesIntoFile } from "./InjectAlias";
@@ -8,6 +8,28 @@ import { equalsPosition, isEditorPositionInPos, moveCursor, moveEditorPosition }
 import { capitalize } from "./Utils";
 import { getOrCreateFileOfLink } from "./VaultUtils";
 import { DEFAULT_SETTINGS, LinksSettingTab } from "./settings";
+
+interface CanvasNode {
+	canvas: unknown;
+}
+
+function isCanvasNode(obj: unknown): obj is CanvasNode {
+	if (typeof obj == "object" && obj != null && "canvas" in obj) {
+		return true;
+	}
+	return false;
+}
+
+interface CanvasNodeContext {
+	node: CanvasNode;
+}
+
+function isCanvasNodeContext(ctx: unknown): ctx is CanvasNodeContext {
+	if (typeof ctx == "object" && ctx != null && "node" in ctx) {
+		return isCanvasNode((ctx as CanvasNodeContext).node);
+	}
+	return false;
+}
 
 /**
  * Information about to be handled link
@@ -20,7 +42,7 @@ class LinkInfo {
 		/** Editor position of the link start bracket `[` */
 		public readonly linkStart: EditorPosition,
 		/** The file which contains the link */
-		public readonly file: TFile,
+		public readonly file: TFile | undefined,
 		/** The Editor which contains the link*/
 		public readonly editor: Editor,
 		/** At the end make alias */
@@ -61,12 +83,10 @@ export default class LinkWithAliasPlugin extends Plugin {
 			name: "Create link with alias",
 			icon: "bracket-glyph",
 			editorCallback: (editor: Editor, ctx) => {
-				if (ctx.file) {
-					this.createLinkFromSelection(ctx.file, editor, editor.getCursor(), {
-						makeAlias: true,
-						pathFromText: this.settings.copyDisplayText,
-					});
-				}
+				this.createLinkFromSelection(this.getFileFromContext(ctx), editor, editor.getCursor(), {
+					makeAlias: true,
+					pathFromText: this.settings.copyDisplayText,
+				});
 			},
 		});
 		this.addCommand({
@@ -74,12 +94,10 @@ export default class LinkWithAliasPlugin extends Plugin {
 			name: "Create link",
 			icon: "bracket-glyph",
 			editorCallback: (editor: Editor, ctx) => {
-				if (ctx.file) {
-					this.createLinkFromSelection(ctx.file, editor, editor.getCursor(), {
-						makeAlias: false,
-						pathFromText: this.settings.copyDisplayText,
-					});
-				}
+				this.createLinkFromSelection(this.getFileFromContext(ctx), editor, editor.getCursor(), {
+					makeAlias: false,
+					pathFromText: this.settings.copyDisplayText,
+				});
 			},
 		});
 
@@ -94,6 +112,16 @@ export default class LinkWithAliasPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	private getFileFromContext(ctx: MarkdownView | MarkdownFileInfo): TFile | undefined {
+		if (ctx.file) {
+			return ctx.file;
+		}
+		if (isCanvasNodeContext(ctx)) {
+			//TODO detect file of the canvas
+		}
+		return;
+	}
+
 	/**
 	 * starts create link with alias process for current `editor` of `file` on `position`
 	 * Only one link is processed, so only last call matters
@@ -102,7 +130,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 	 * @param position
 	 */
 	private createLinkFromSelection(
-		file: TFile,
+		file: TFile | undefined,
 		editor: Editor,
 		position: EditorPosition,
 		options: { makeAlias: boolean; pathFromText: boolean },
@@ -115,7 +143,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 			//the cursor is inside the link, do not make nested link
 			//but instead check that display text is used as alias
 			if (options.makeAlias) {
-				this.addMissingAlias(cacheLink, file.path);
+				this.addMissingAlias(cacheLink, file?.path);
 			}
 			return;
 		}
@@ -183,7 +211,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 			}
 			if (lastLink.makeAlias) {
 				//now we can create an alias
-				this.addMissingAlias(cacheLink, lastLink.file.path);
+				this.addMissingAlias(cacheLink, lastLink.file?.path);
 			}
 			//continue handling here, because user can come back and add different alias for that last link
 			return true;
@@ -201,7 +229,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 	 * @param sourcePath
 	 * @returns
 	 */
-	private async addMissingAlias(cacheLink: ReferenceCache, sourcePath: string): Promise<void> {
+	private async addMissingAlias(cacheLink: ReferenceCache, sourcePath: string | undefined): Promise<void> {
 		if (!cacheLink.original.contains("|") || !cacheLink.displayText) {
 			//there is no special display text = no alias to add
 			return;
