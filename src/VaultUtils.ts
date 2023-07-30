@@ -6,7 +6,8 @@ import { App, TFile } from "obsidian";
  * @param sourcePath the path of source document
  * @returns target file of link target if existing or creates a new file if missing
  */
-export async function getOrCreateFileOfLink(app: App, target: string, sourcePath: string): Promise<TFile> {
+export async function getOrCreateFileOfLink(app: App, target: string, sourcePath: string | undefined): Promise<TFile> {
+	sourcePath = sourcePath || "/";
 	const existingFile = app.metadataCache.getFirstLinkpathDest(target, sourcePath);
 	if (existingFile) {
 		return existingFile;
