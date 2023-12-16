@@ -118,11 +118,11 @@ export function getLinkTextPosWithPipe(link: ReferenceCache): Pos {
  * @param editor
  * @param linkText
  */
-export function setLinkText(link: ReferenceCache, editor: Editor, linkText: string): void {
+export function setLinkText(link: ReferenceCache, editor: Editor, linkText: string | undefined): void {
 	if (link.displayText !== linkText) {
 		//it was changed rollback the change now
 		const linkTextPos = getLinkTextPosWithPipe(link);
-		editor.replaceRange(`|${linkText}`, locToEditorPositon(linkTextPos.start), locToEditorPositon(linkTextPos.end));
+		editor.replaceRange(linkText != null ? `|${linkText}` : "", locToEditorPositon(linkTextPos.start), locToEditorPositon(linkTextPos.end));
 		link.displayText = linkText;
 	}
 }

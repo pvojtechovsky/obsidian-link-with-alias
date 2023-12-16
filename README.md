@@ -2,12 +2,13 @@
 
 ![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22link-with-alias%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&style=plastic) ![](https://img.shields.io/github/v/release/pvojtechovsky/obsidian-link-with-alias?label=Latest%20Release&style=plastic)
 
-This plugin implements two commands
+This plugin implements these commands
 
 -   Create link with alias - provides fast creation of link whose display text is added into aliases atribute in front matter of the target note.
 -   Create link - provides fast creation of link
+-   Toggle link display text - toggles display text (alias) of the just edited link.
 
-Both commands assures that link display text is kept => isn't replaced by Obsidian link autocompletion.
+Both `Create link` commands assures that link display text is kept => isn't replaced by Obsidian link autocompletion.
 
 # Use cases
 
@@ -38,6 +39,11 @@ User puts cursor into existing link and runs command "Create link with alias". T
 User puts cursor into text and runs command "Create link with alias". It creates link brackets and opens autocompletion popup for entering of link target name. After user types in part of the target name or alias and selects it by enter, the link is created. If there is no display text and user moves back into link and enters one, then system detects it and after cursor leaves the brackets or user closes the window, the link display text is added as alias into front matter of the target note. While this use case is supported, it is usually faster to write text without link first and then **Make link on existing text**.
 
 ![Run command, select target, press Enter, move cursor back, write alias, leave the link, done](use-case3.gif)
+
+## Toggle link display text
+
+As long as rename of Note has to keep the text with link to note understandable, it is good idea to keep the link display text in the link. In such case the Note is renamed but link display text stays unchanged. That is wanted behavior in many cases.
+But in case you have just list of Notes, where you want to see current note name, then the link display text is not helpful. The "Toggle link display text" command is a fast way how to remove unwanted display text and to keep just plain link.
 
 # Settings
 

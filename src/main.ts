@@ -101,6 +101,15 @@ export default class LinkWithAliasPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: "toggle-link-display-text",
+			name: "Toggle link display text",
+			icon: "link-2",
+			editorCallback: (editor: Editor, ctx) => {
+				this.toggleLinkTextFromSelection(this.getFileFromContext(ctx), editor, editor.getCursor());
+			},
+		});
+
 		this.addSettingTab(new LinksSettingTab(this.app, this));
 	}
 
@@ -186,6 +195,23 @@ export default class LinkWithAliasPlugin extends Plugin {
 
 		this.linkInfo = lastLink;
 	}
+
+	toggleLinkTextFromSelection(file: TFile | undefined, editor: Editor, position: EditorPosition): void {
+		const cacheLink = getReferenceCacheFromEditor(editor, position);
+		if (cacheLink != null && cacheLink.position.start.col !== position.ch) {
+			//the cursor is inside the link, toggle display text
+			if (cacheLink.displayText == null) {
+				//add display text separator to open drop down menu
+				editor.setCursor({ line: cacheLink.position.end.line, ch: cacheLink.position.end.col - 2 });
+				editor.replaceSelection("|");
+			} else {
+				// delete display text from this link and keep just plain link
+				setLinkText(cacheLink, editor, undefined);
+			}
+			return;
+		}
+	}
+
 	/**
 	 * Handles cache or editor cursor position change on the lastLink
 	 * @param editor
