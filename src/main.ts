@@ -4,6 +4,8 @@ import { EditorCursorListener } from "./EditorCursorListener";
 import { addMissingAliasesIntoFile } from "./InjectAlias";
 import { Unregister } from "./ListenerRegistry";
 import { getReferenceCacheFromEditor, setLinkText } from "./MarkdownUtils";
+import { hookOnGetFirstLinkpathDest, hookOnGetLinkSuggestions, hookOnGetLinkpathDest } from "./MetadataCacheUtils";
+import { listenOnPackageDependenciesChange, updatePackageDependenciesDetails } from "./PackageDependencies";
 import { equalsPosition, isEditorPositionInPos, moveCursor, moveEditorPosition } from "./PositionUtils";
 import { capitalize } from "./Utils";
 import { getOrCreateFileOfLink } from "./VaultUtils";
@@ -111,6 +113,19 @@ export default class LinkWithAliasPlugin extends Plugin {
 		});
 
 		this.addSettingTab(new LinksSettingTab(this.app, this));
+
+		this.addCommand({
+			id: "list-package-dependencies",
+			name: "List package dependencies",
+			callback: () => {
+				updatePackageDependenciesDetails();
+			},
+		});
+
+		await listenOnPackageDependenciesChange(this);
+		hookOnGetLinkSuggestions(this);
+		hookOnGetLinkpathDest(this);
+		hookOnGetFirstLinkpathDest(this);
 	}
 
 	async loadSettings() {
