@@ -165,6 +165,15 @@ export default class LinkWithAliasPlugin extends Plugin {
 			//nothing is selected, just create a new empty link
 			editor.replaceSelection(`[[]]`);
 			linkStart = moveEditorPosition(moveCursor(editor, -2), -2);
+		} else if (selected_word.indexOf("|") >= 0) {
+			const parts = selected_word.split("|");
+			if (parts.length > 2) {
+				return;
+			}
+			//selected text already contains a file name and display text
+			editor.replaceSelection(`[[${selected_word}]]`);
+			linkStart = moveEditorPosition(moveCursor(editor, -(parts[1].length + 3)), -(parts[0].length + 2));
+			linkText = parts[1];
 		} else {
 			//text is selected
 			if (options.pathFromText) {
