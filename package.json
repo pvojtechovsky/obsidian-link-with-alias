@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-link-with-alias",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"description": "Creates links and aliases in front matter of target document",
 	"main": "main.js",
 	"scripts": {
