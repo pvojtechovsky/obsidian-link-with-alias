@@ -3,10 +3,12 @@ import { default as FrontmatterLinksPlugin, default as LinkWithAliasPlugin } fro
 
 export interface LinksSettings {
 	copyDisplayText: boolean;
+	capitalizeFileName: boolean;
 }
 
 export const DEFAULT_SETTINGS: LinksSettings = {
 	copyDisplayText: true,
+	capitalizeFileName: true,
 };
 
 export class LinksSettingTab extends PluginSettingTab {
@@ -25,6 +27,17 @@ export class LinksSettingTab extends PluginSettingTab {
 				component.setValue(this.plugin.settings.copyDisplayText);
 				component.onChange((value: boolean) => {
 					this.plugin.settings.copyDisplayText = value;
+					this.plugin.saveSettings();
+				});
+			});
+		new Setting(this.containerEl)
+			.setName("Capitalize link file name")
+			.setDesc("When selected then `text` creates link `[[Text|text]]`, otherwise `[[text|text]]`.")
+			.setDisabled(!this.plugin.settings.copyDisplayText)
+			.addToggle((component: ToggleComponent) => {
+				component.setValue(this.plugin.settings.capitalizeFileName);
+				component.onChange((value: boolean) => {
+					this.plugin.settings.capitalizeFileName = value;
 					this.plugin.saveSettings();
 				});
 			});

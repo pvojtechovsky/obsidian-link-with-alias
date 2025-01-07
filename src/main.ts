@@ -169,7 +169,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 			//text is selected
 			if (options.pathFromText) {
 				// use it as link target and also link display text
-				editor.replaceSelection(`[[${capitalize(selected_word)}|${selected_word}]]`);
+				editor.replaceSelection(`[[${this.capitalizeOptionally(selected_word)}|${selected_word}]]`);
 				linkStart = moveEditorPosition(moveCursor(editor, -(selected_word.length + 3)), -(selected_word.length + 2));
 				linkText = selected_word;
 			} else {
@@ -203,6 +203,13 @@ export default class LinkWithAliasPlugin extends Plugin {
 		);
 
 		this.linkInfo = lastLink;
+	}
+
+	capitalizeOptionally(name: string): string {
+		if (this.settings.capitalizeFileName) {
+			return capitalize(name);
+		}
+		return name;
 	}
 
 	toggleLinkTextFromSelection(file: TFile | undefined, editor: Editor, position: EditorPosition): void {
