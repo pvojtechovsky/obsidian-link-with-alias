@@ -1,14 +1,16 @@
-import { Editor, EditorPosition, Plugin, WorkspaceLeaf } from "obsidian";
+import { Editor, EditorPosition, MarkdownFileInfo, MarkdownView, Plugin, TFile, WorkspaceLeaf } from "obsidian";
 import { ListenerRegistry, Unregister } from "./ListenerRegistry";
 import { equalsPosition } from "./PositionUtils";
 
 /**
+ * @param cursorPosition if undefined then editor file changed
  * @return true to be called again with next cursor change, false to cancel this registration
  */
 export type CursorChangeCallback = (cursorPosition: EditorPosition | undefined) => boolean;
 
 interface EventData {
 	leaf?: WorkspaceLeaf | null;
+	file?: TFile | null;
 }
 
 /**
@@ -29,6 +31,12 @@ export class EditorCursorListener {
 				this.listenerRegistry.process({ leaf });
 			}),
 		);
+		this.plugin.registerEvent(
+			//Listen on modification of file
+			this.plugin.app.workspace.on("editor-change", (editor: Editor, info: MarkdownView | MarkdownFileInfo) => {
+				this.listenerRegistry.process({ file: info.file });
+			}),
+		);
 		this.plugin.registerInterval(window.setInterval(() => this.onTimeInterval(), cursorCheckTimeout));
 	}
 
@@ -42,13 +50,28 @@ export class EditorCursorListener {
 	 * @param onCursorChange
 	 */
 	fireOnCursorChange(editor: Editor, onCursorChange: CursorChangeCallback): Unregister {
+		const originFile = getFileFromEditor(editor);
 		let lastCursorPosition = editor.getCursor();
-		return this.listenerRegistry.register(({ leaf }) => {
-			const cursorPosition = editor.getCursor();
-			if (equalsPosition(cursorPosition, lastCursorPosition) || onCursorChange(cursorPosition)) {
-				lastCursorPosition = cursorPosition;
+		return this.listenerRegistry.register(({ leaf, file }) => {
+			if (file && originFile.path != file.path) {
+				//we do not care about changes on different files
+				return true;
 			}
-			return true;
+			if (leaf != null) {
+				//another editor was opened
+				onCursorChange(undefined);
+				return false;
+			}
+			const cursorPosition = editor.getCursor();
+			if (!file && equalsPosition(cursorPosition, lastCursorPosition)) {
+				return true;
+			}
+			lastCursorPosition = cursorPosition;
+			return onCursorChange(cursorPosition);
 		});
 	}
+}
+
+function getFileFromEditor(editor: Editor): TFile {
+	return (editor as any).editorComponent.file;
 }

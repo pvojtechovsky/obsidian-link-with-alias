@@ -47,6 +47,8 @@ class LinkInfo {
 		public readonly editor: Editor,
 		/** At the end make alias */
 		public readonly makeAlias: boolean,
+		/** The latest version of link cache */
+		public cacheLink: ReferenceCache,
 		/** The string of link text from the last process check */
 		public linkText?: string,
 	) {}
@@ -183,12 +185,19 @@ export default class LinkWithAliasPlugin extends Plugin {
 			this.linkInfo.destroy();
 			delete this.linkInfo;
 		}
+		const newCacheLink = getReferenceCacheFromEditor(editor, position);
+		if (!newCacheLink) throw new Error("cannot find newly create link");
 		//create new link handling request
-		const lastLink = new LinkInfo(linkStart, file, editor, options.makeAlias, linkText);
+		const lastLink = new LinkInfo(linkStart, file, editor, options.makeAlias, newCacheLink, linkText);
 
 		lastLink.register(
 			//listen on cursor move or deactivation of editor
 			this.editorCursorListener.fireOnCursorChange(editor, (cursorPosition) => {
+				if (!cursorPosition) {
+					//user is editing another file now. Add missing alias from origin file
+					this.addMissingAlias(lastLink.cacheLink, lastLink.file?.path);
+					return false;
+				}
 				return this.handleChangeOnLastLink(editor, lastLink);
 			}),
 		);
@@ -222,6 +231,7 @@ export default class LinkWithAliasPlugin extends Plugin {
 		const cacheLink = getReferenceCacheFromEditor(editor, lastLink.linkStart);
 		if (cacheLink && equalsPosition(lastLink.linkStart, cacheLink.position.start)) {
 			//the link still exist and starts on the expected position, continue handling
+			lastLink.cacheLink = cacheLink;
 			//the cache link for just created link exists now
 			if (isEditorPositionInPos(lastLink.editor.getCursor(), cacheLink.position)) {
 				//User still edits the last link,
