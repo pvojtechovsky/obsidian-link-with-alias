@@ -5,9 +5,10 @@ import { addMissingAliasesIntoFile } from "./InjectAlias";
 import { Unregister } from "./ListenerRegistry";
 import { getReferenceCacheFromEditor, setLinkText } from "./MarkdownUtils";
 import { equalsPosition, isEditorPositionInPos, moveCursor, moveEditorPosition } from "./PositionUtils";
-import { capitalize } from "./Utils";
-import { getOrCreateFileOfLink } from "./VaultUtils";
 import { DEFAULT_SETTINGS, LinksSettingTab } from "./settings";
+import { getTemplaterPlugin } from "./TemplaterIntegration";
+import { capitalize, isNewFile } from "./Utils";
+import { getOrCreateFileOfLink } from "./VaultUtils";
 
 interface CanvasNode {
 	canvas: unknown;
@@ -293,6 +294,12 @@ export default class LinkWithAliasPlugin extends Plugin {
 			return;
 		}
 		const target = await getOrCreateFileOfLink(this.app, linkTargetPath, sourcePath);
+		if (isNewFile(target)) {
+			const templaterPlugin = getTemplaterPlugin(this.app);
+			if (templaterPlugin) {
+				await templaterPlugin.waitUntilDone();
+			}
+		}
 		await addMissingAliasesIntoFile(this.app.fileManager, target, [cacheLink.displayText]);
 	}
 }
